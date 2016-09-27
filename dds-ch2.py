@@ -11,7 +11,7 @@ def plot():
 # Read NYT ad click data.
 data = pandas.read_csv("http://stat.columbia.edu/~rachel/datasets/nyt1.csv")
 
-# Add new column grouping users by age.
+# Add new variable grouping users by age.
 data["Age_group"] = pandas.cut(data["Age"], [-numpy.inf, 18, 24, 34, 44, 54, 64, numpy.inf])
 
 # Histograms for number of impressions, for each age group.
@@ -29,3 +29,9 @@ plot()
 #users who actually click), for each age group.
 data[data.Click_through != 0].hist("Click_through", by="Age_group")
 plot()
+
+# Add new variable grouping users by click behavior
+data["Lotsa_clicks"] = pandas.cut(data["Age"], [-numpy.inf, 0.8, numpy.inf])
+
+# Plot distribution of age, for low-click vs high-click users.
+data.hist("Age", by="Lotsa_clicks")
