@@ -32,3 +32,34 @@ GenderDist$female %>%
   mean()
 GenderDist$female %>%
   sd()
+
+NewGenderDist <- tribble(
+  ~major, ~male, ~female,
+  "material science", 21, 32,
+  "mechanical engineering", 205, 78,
+  "unaffiliated", 746, 690
+) %>%
+  full_join(GenderDist)
+
+NewGenderDist %>%
+  mutate(malevsfemale = female - male)
+
+
+# Problem 2 - initial analysis.
+titanic <- read_csv("https://query.data.world/s/7kzir5uonudtrjdkvy8nm9zpm")
+titanic
+summary(titanic)
+# 1309 observations, 14 variables. pclass, survived, sex, embarked are factors. 
+
+# 2-3. subsets of data
+titanic %>%
+  filter(age < 1) %>%
+  select(age)
+
+malePassengers <- titanic %>%
+  filter(sex == "male") %>%
+  select(-sex)
+
+# 2-4 max, mean, sd.
+summary(malePassengers$age)
+sd(malePassengers$age, na.rm = TRUE)
