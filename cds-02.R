@@ -24,12 +24,46 @@ group_by(AirData, Month) %>%
 group_by(AirData, Month) %>%
   summarise(total.rad = sum(Solar.R, na.rm = TRUE))
 
+# 2-0 Create indices column
+AirData <- mutate(AirData, ind = rownames(AirData))
+
 # 2-1 Subset selection
-tmd <- select(AirData, Temp, Month, Day)
+tmd <- select(AirData, ind, Temp, Month, Day)
 osw <- select(AirData, -Temp, -Month, -Day)
 
 # 2-2 Filtering
-largeSolarR <- filter(AirData, Solar.R > 200)
+largeSolarR <- filter(osw, Solar.R > 200)
 
 # 2-3 Joins
-# [Me: lame choice of using joins!]
+largeSolarR %>%
+  inner_join(tmd, by = "ind")
+
+#2-4 Aggregation, counting
+AirData %>%
+  group_by(Month) %>%
+  summarise(tempByMonth = sd(Temp, na.rm = TRUE))
+
+AirData %>%
+  group_by(Month) %>%
+  summarise(monthFreq = sum(!is.na(Temp)))
+
+# 2-5 Feature generation using mutate
+AirData %>%
+  mutate(TempC = (Temp - 32) * (5/9))
+
+# 3 Data manipulation continued
+titanic <- read_csv("https://query.data.world/s/7kzir5uonudtrjdkvy8nm9zpm")
+
+# 3-1 Split name column
+titanic <- titanic %>%
+  separate(name, c("LastName", "temp"), sep = ",")
+
+titanic <- titanic %>%
+  separate(temp, c("Title", "FirstName"), sep = "[.]", extra = "merge")
+
+# titanic[475,]
+# A name with two periods!
+
+# 3-2 Combine columns
+titanic %>%
+  mutate(FullName = paste(FirstName, LastName, sep = " "))
