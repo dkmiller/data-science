@@ -2,6 +2,7 @@
 
 library(ggvis)
 library(tidyverse)
+library(TTR)
 
 # 3.8 Exercises
 
@@ -19,4 +20,16 @@ df %>%
   layer_points()
 
 # Xbar converges to the true mean (1/2), while Cbar never converges. 
+
+# 10. 
+df <- tibble(Y = 2*rbernoulli(10000) - 1) %>%
+  mutate(i = row_number()) %>%
+  mutate(X = cumsum(Y)) %>%
+  mutate(E = X / i) %>%
+  mutate(V = runSD(X, cumulative = T)^2)
+
+# Random behavior...
+df %>%
+  ggvis(~i, ~X) %>% 
+  layer_points()
 
