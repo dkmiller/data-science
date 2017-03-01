@@ -1,6 +1,7 @@
 # Chapter 13 from "R for data science"
 # http://r4ds.had.co.nz/relational-data.html
 
+library(fueleconomy)
 library(ggvis)
 library(tidyverse)
 library(maps)
@@ -77,10 +78,73 @@ flights %>%
   layer_points()
 
 # 4. What weather conditions make it more likely to see a delay?
-# WARNING: this crashes RStudio.
+weather.data <- flights %>%
+  left_join(weather) %>%
+  filter(wind_speed < 1000) %>%
+  select(dep_delay, temp, dewp, humid, wind_speed, wind_gust, precip, pressure, visib)
+
+# Seems like no real correlations here.
+cor(scale(weather.data), use="complete")
+
+# Visibility doesn't seem to affect anything. 
+weather.data %>%
+  filter(!is.na(visib) & !is.na(dep_delay)) %>%
+  filter(dep_delay > 100) %>%
+  ggvis(~factor(visib), ~dep_delay) %>%
+  layer_boxplots()
+
+# More helpful, perhaps. Try with temp, dewp, humid, wind_speed, wind_gust, precip, pressure, visib. 
+weather.data %>%
+  filter(dep_delay > 60) %>% # Only serious delays
+  ggvis(~visib) %>%
+  layer_histograms()
+
+# It seems like for humidity > 80, there are more delays
+# Ditto for wind_speed > 30
+# ... for wind_gust > 40
+# ... for visib < 4
+
+# 5. What happened on June 13 2013? 
+# Seems to be a lot of delays on the East Coast. There were two derechos 
+# https://en.wikipedia.org/wiki/June_12%E2%80%9313,_2013_derecho_series
 flights %>%
   left_join(weather) %>%
-  filter(wind_speed < 100)
-  ggvis(~wind_speed, ~dep_delay) %>%
-  layer_model_predictions(model = "lm", se = TRUE)
+  filter(year == 2013 & month == 6 & day == 13) %>%
+  left_join(airports, by = c("dest" = "faa")) %>%
+  ggplot(aes(lon,lat, size = arr_delay + dep_delay)) +
+  borders("state") +
+  geom_point() +
+  coord_quickmap()
+
+
+
+
+
+# 13.5.1 Exercises
+
+# 1. What does it mean for a flight to have a missing tailnum?
+# It means the flight was cancelled. 
+flights %>%
+  filter(is.na(tailnum))
+
+# What do the tail numbers that don???t have a matching record in planes have in common?
+# All but a few are from AA or MQ. 
+flights %>%
+  anti_join(planes, by = "tailnum") %>%
+  filter(!is.na(tailnum)) %>%
+  group_by(carrier) %>%
+  summarise(count = n())
+
+#2. Filter flights to only show flights with planes that have flown at least 100 flights.
+flights %>%
+  group_by(tailnum) %>%
+  summarise(count = n(), sort = T) %>%
+  filter(count >= 100)
+
+# Combine fueleconomy::vehicles and fueleconomy::common 
+# to find only the records for the most common models.
+fueleconomy::common %>%
+  left_join(fueleconomy::vehicles)
+
+
 
