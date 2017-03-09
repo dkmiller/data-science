@@ -20,6 +20,10 @@ prepare.L <- function(name) {
 # Sha_an = 1
 prepare.L("rank0.csv") %>% tail()
 
+prepare.L("14a1_lpdata.txt") %>% tail()
+
+
+
 # [0, 0, 1, -1, 0]
 # rank 1: to L(1) = 4.9987...
 # regulator = 0.05111140824
