@@ -33,3 +33,14 @@ df %>%
   ggvis(~i, ~X) %>% 
   layer_points()
 
+
+
+
+
+# 7.4 Exercises
+
+# 3. The KS statistic is <= the 95% confidence band approximately 95% of the time. 
+tibble(KS = replicate(1000, ks.test(rnorm(100), "pnorm")$statistic)) %>%
+  filter(KS <= sqrt(1/(2*100)*log(2/.05))) %>%
+  count()
+
