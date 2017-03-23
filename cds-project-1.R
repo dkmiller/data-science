@@ -7,7 +7,7 @@ library(tidyverse)
 # The actual file is:
 # https://www.kaggle.com/miroslavsabo/young-people-survey/downloads/responses.csv
 setwd("GitHub/data-science/")
-survey <- read_csv("young-people.csv") %>%
+survey <- read_csv("cds-young-people.csv") %>%
   select(-`Internet usage`, -`Education`)
 
 
