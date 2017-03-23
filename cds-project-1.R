@@ -1,5 +1,3 @@
-library(magrittr)
-library(rpart)
 library(tidyverse)
 
 # Using data from a Kaggle competition
@@ -7,23 +5,20 @@ library(tidyverse)
 # The actual file is:
 # https://www.kaggle.com/miroslavsabo/young-people-survey/downloads/responses.csv
 setwd("GitHub/data-science/")
-survey <- read_csv("cds-young-people.csv") %>%
-  select(-`Internet usage`, -`Education`)
+survey <- read_csv("cds-young-people.csv")
+
+# Use only columns hat are numeric.
+survey <- Filter(is.numeric,survey) 
+# Rename columns so that reformulate works properly.
+colnames(survey) <- gsub(' - ', '__', colnames(survey))
 
 
-# Try to find the features with worst baseline prediction (i.e., the features 
-# with least common "most common value"). These will be the features with the 
-# "flattest" histograms. 
-best <- apply(survey, 2, function(x) { sort(table(x), decreasing = TRUE)[1] / length(x) }) %>%
-  sort() %>%
-  extract(1:15) 
-# Try: `Adrenaline sports`, `Life struggles`, `Writing notes`, `Hiphop, Rap`, 
-# `Shopping centres`, `Snakes`, `Alternative`
-# All of these have baseline prediction rate <= 25%. 
+# Create a table with one column: the column names of survey
+model.eff <- tibble(name = colnames(survey))
 
-best <- attributes(best)$names
 
-try.glm <- function(col.name) {
+# Computes improvement over baseline effectiveness. 
+eff.imp <- function(col.name) {
   # Split into test / training data for later cross-validation. 
   train.ind <- sample(nrow(survey), 0.8*nrow(survey))
   train <- survey[train.ind,]
@@ -33,8 +28,17 @@ try.glm <- function(col.name) {
   model <- glm(data = train, formula = form)
   pred <- predict(model, newdata = test) %>%
     round()
-  length(pred[pred == test[[col.name]]]) / length(pred)
+  eff <- length(pred[pred == test[[col.name]]]) / length(pred)
+  bas.eff <- sort(table(survey[[col.name]]), decreasing = TRUE)[1] / length(survey[[col.name]])
+  res <- eff - bas.eff
+  attributes(res) <- NULL
+  unlist(res)
 } 
+
+
+model.eff$eff <- unlist(lapply(model.eff$name, eff.imp))
+
+
 
 best %>%
   mutate(effect = try.glm(name))
@@ -62,3 +66,15 @@ model <- glm(data = train, Alternative ~ .)
 predict <- predict(model, newdata = test) %>% round()
 
 length(predict[predict == test$Alternative]) / length(predict)
+
+
+
+
+effectiveness <- tibble(name = colnames(survey))
+
+effectiveness %>%
+  mutate
+
+
+
+
