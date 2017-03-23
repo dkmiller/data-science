@@ -44,3 +44,21 @@ tibble(KS = replicate(1000, ks.test(rnorm(100), "pnorm")$statistic)) %>%
   filter(KS <= sqrt(1/(2*100)*log(2/.05))) %>%
   count()
 
+# 7. 
+df <- read.table("http://www.stat.cmu.edu/~larry/all-of-statistics/=data/fijiquakes.dat", 
+                 header = TRUE,
+                 sep = "") %>%
+  as_tibble()
+
+emp.cdf <-ecdf(df$mag)
+
+U <- function(x) {
+  emp.cdf(x) + 0.048
+}
+L <- function(x) {
+  emp.cdf(x) - 0.048
+}
+# 95% confidence interval with epsilon = 0.048
+plot(U, 4, 7)
+par(new=TRUE)
+plot(L, 4, 7)
