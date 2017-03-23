@@ -1,5 +1,9 @@
 library(tidyverse)
 
+# Project 1, from the Cornell Data Science course
+# https://cdstrainingprogram.github.io/assignments/Project1.pdf
+
+
 # Using data from a Kaggle competition
 # https://www.kaggle.com/miroslavsabo/young-people-survey
 # The actual file is:
@@ -7,74 +11,47 @@ library(tidyverse)
 setwd("GitHub/data-science/")
 survey <- read_csv("cds-young-people.csv")
 
-# Use only columns hat are numeric.
+# Use only columns that are numeric.
 survey <- Filter(is.numeric,survey) 
 # Rename columns so that reformulate works properly.
 colnames(survey) <- gsub(' - ', '__', colnames(survey))
 
 
-# Create a table with one column: the column names of survey
-model.eff <- tibble(name = colnames(survey))
+# The baseline effectiveness of a column is the ratio
+# (# occurances of  most common value) / (total number of data points)
+baseline.effectiveness <- function(col.name) {
+  sort(table(survey[[col.name]]), decreasing = TRUE)[1] / length(survey[[col.name]])
+}
 
-
-# Computes improvement over baseline effectiveness. 
-eff.imp <- function(col.name) {
+# Computes effectiveness (# correct predictions / # cases) for the given 
+# column. 
+effectiveness <- function(col.name) {
   # Split into test / training data for later cross-validation. 
-  train.ind <- sample(nrow(survey), 0.8*nrow(survey))
-  train <- survey[train.ind,]
-  test <- survey[-train.ind,]
+  train.indices <- sample(nrow(survey), 0.8*nrow(survey))
+  train <- survey[train.indices,]
+  test <- survey[-train.indices,]
   
   form <- reformulate(c("."), response = col.name)
   model <- glm(data = train, formula = form)
   pred <- predict(model, newdata = test) %>%
     round()
-  eff <- length(pred[pred == test[[col.name]]]) / length(pred)
-  bas.eff <- sort(table(survey[[col.name]]), decreasing = TRUE)[1] / length(survey[[col.name]])
-  res <- eff - bas.eff
-  attributes(res) <- NULL
-  unlist(res)
+  length(pred[pred == test[[col.name]]]) / length(pred)
 } 
 
 
-model.eff$eff <- unlist(lapply(model.eff$name, eff.imp))
+
+# Create a table with one column: the column names of survey
+model.eff <- tibble(name = colnames(survey))
+
+# Long computation. Create a GLM for each column, and compute its 
+# effectiveness. For some reason, the obvious thing to do (mutate) 
+# doesn't work here. 
+model.eff$eff <- unlist(lapply(model.eff$name, effectiveness))
+model.eff$base <- unlist(lapply(model.eff$name, baseline.effectiveness))
 
 
-
-best %>%
-  mutate(effect = try.glm(name))
-
-effectiveness <- tibble(col.name = c("Adrenaline sports", "Life struggles", "")) %>%
-  mutate(effect = try.glm(col.name))
-
-for(name in best) {
-  print(name)
-  print(try.glm(name))
-}
-
-try.glm("Adrenaline sports")
-try.glm("Life struggles")
-try.glm("Writing notes")
-try.glm("Snakes")
-
-
-# Split into test / training data for later cross-validation. 
-train.ind <- sample(nrow(survey), 0.8*nrow(survey))
-train <- survey[train.ind,]
-test <- survey[-train.ind,]
-
-model <- glm(data = train, Alternative ~ .)
-predict <- predict(model, newdata = test) %>% round()
-
-length(predict[predict == test$Alternative]) / length(predict)
-
-
-
-
-effectiveness <- tibble(name = colnames(survey))
-
-effectiveness %>%
-  mutate
-
-
-
-
+# The top ten all have predictive power 30% or more better than "baseline
+# effectiveness." 
+model.eff %>%
+  mutate(improvement = eff - base) %>%
+  arrange(desc(improvement)) 
