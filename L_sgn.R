@@ -1,6 +1,13 @@
 library(tidyverse)
 
-setwd("C:/Users/dm635/Downloads")
+setwd("C:/Users/dm635/Documents/GitHub/tidbits/2017-03-13_L_sgn")
+
+prepare.Lval <- function(name, s) {
+  read_csv(name) %>% 
+    mutate(sgn = sign(trace)) %>%
+    mutate(euler = 1/(1 - sgn*prime^(-s))) %>%
+    mutate(L = cumprod(euler)) 
+}
 
 prepare.L <- function(name) {
   read_csv(name) %>% 
