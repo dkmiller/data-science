@@ -159,3 +159,116 @@ test['transvalue'] = np.exp(test.transvalue_log_pred).astype(int)
 filename = 'Daniel_Miller_predictions.csv'
 print 'Writing predictions to %s.' % filename
 test.to_csv(filename, columns=['propertyid', 'transvalue'])
+
+
+# Copy of the readme:
+"""
+# Zillow
+Data science exercise as part of interview process.
+
+## Features: how do they matter (EDA).
+
+### propertyid
+Is not reasonably distributed. A huge majority of these values have first digit
+5. Not sure if this matters.
+
+_Don't use this to predict price._
+
+### transdate
+Pretty uniform, with no clear dependence of price on this.
+
+_Don't use this to predict price._
+
+### transvalue
+The log of this is reasonably distributed. log(transvalue) has a roughly
+linear dependence on log(finishedsquarefeet).
+
+### transdate_previous
+This only exists for some houses, but is reasonably distributed.
+
+_Don't use this to predict price._
+
+### transvalue_previous
+The property value seems to be a rapidly increasing function of the previous
+value, when it is recorded.
+
+_Use this (when available) to predict price._
+
+### bathroomcnt
+Price has roughly linear (with some significant outliers) dependence on this.
+
+_Use this (when available) to predict price._
+
+### bedroomcnt
+Price has roughly linear (with some significant outliers) dependence on this.
+
+_Use this (when available) to predict price._
+
+### builtyear
+Concentrated heavily towards recent years.
+
+_Don't use this to predict price._
+
+### finishedsquarefeet
+Pretty clear linear / quadratic dependence of price on this.
+
+_Use this (when available) to predict price._
+
+### lotsizesquarefeet
+No clear dependence of price on this.
+
+_Don't use this to predict price._
+
+### storycnt
+No clear dependence of price on this.
+_Don't use this to predict price._
+
+### (longitude, latitude)
+Locations all lie near Seattle, in Kings County, WA.
+
+_Don't use this to predict price._
+
+### usecode
+Only takes one value, so ignore.
+
+_Don't use this to predict price._
+
+### censustract
+Data fits into two distinct clumps, use 2-means here.
+
+_Don't use this to predict price._
+
+
+### viewtypeid
+Generally three clumps. Values 2, 4, 9, 12, and 13 have much less variability in price than homes with value 3.
+
+_Use this (when available, as several dummy variables) to predict price._
+
+
+## Initial attempt: just use linear regression.
+A simple linear regression of the form transvalue ~ finishedsquarefeet fails
+miserably.
+
+Next, we try using linear regression on the following:
+* transvalue_previous_log (when available)
+* bathroomcnt
+* bedroomcnt
+* finishedsquarefeet_log
+* viewtypeid (as dummy variables)
+
+so one training set with transvalue_previous_log, one without. This works
+pretty well, with MAPE < 0.19.
+
+## Further refinements etc.
+One clear further refinement is to run linear regression as not just
+model the (log of the) value of a property as a linear function the (log of ) its
+finished square feet, but to directly model the value as a linear function of
+some polynomial in the other features. This would involve choosing the degree
+(possibly fractional) of the polynomial, which would ideally be accompanied by
+careful heuristics.
+
+To scale this model to the entire country, it would make most sense to first
+cluster properties by a combination of bathroom count, bedroom count, and
+finished square feet. Within such groups (each of which will be more manageable)
+run linear regression to predict price as a function of the other features.
+"""
