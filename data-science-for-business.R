@@ -1,4 +1,5 @@
 library(ggvis)
+library(mlbench)
 library(tidyverse)
 
 # Examples from the book "Data science for business" by Foster Provost and Tom 
@@ -37,3 +38,12 @@ df <- shrooms %>%
 
 barplot(df$entropy,df$count, space = 0, names.arg = df$gill_color)
 
+
+
+
+
+# Chapter 4? 
+# Load standard Breast Cancer cell dataset. 
+data(BreastCancer)
+# Standard iris dataset. 
+iris
