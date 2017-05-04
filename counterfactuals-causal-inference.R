@@ -2,6 +2,9 @@ library(ggvis)
 library(magrittr)
 library(tidyverse)
 
+# Computations related to the book "Counterfactuals and causal inference" 
+# by Stephen Morgan and Christopher Winship.
+
 # Recreation of Figure 3.4 on p. 67. 
 df <- tibble(
   x = rnorm(300),
@@ -20,3 +23,4 @@ df %$% cor(x,y)
 df %>%
   filter(x+y>1) %$%
   cor(x,y)
+ 
